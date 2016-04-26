@@ -197,16 +197,17 @@ namespace raytrace {
       
       if(discriminant < 0)
 	      return std::shared_ptr<Intersection>(nullptr);
-	      t = (*(-*d) * (*e - c) + sqrt(pow(*d * (*e - c), 2) - (*d * *d) * (*(*e - c) * *(*e - c) - pow(r, 2)))/(*d * *d));
-	      t_2 = (*(-*d) * (*e - c) - sqrt(pow(*d * (*e - c), 2) - (*d * *d) * (*(*e - c) * *(*e - c) - pow(r, 2)))/(*d * *d));
 
-	      if(t_2 < t)
-		      t = t_2;
+      t = (*(-*d) * (*e - c) + sqrt(pow(*d * (*e - c), 2) - (*d * *d) * (*(*e - c) * *(*e - c) - pow(r, 2)))/(*d * *d));
+      t_2 = (*(-*d) * (*e - c) - sqrt(pow(*d * (*e - c), 2) - (*d * *d) * (*(*e - c) * *(*e - c) - pow(r, 2)))/(*d * *d));
 
-	      point = *e + (*d * t);
-	      normal = *(*point - *c)/r;
-	      
-	      return std::shared_ptr<Intersection> (new Intersection(point, normal, t));
+      if(t_2 < t)
+	      t = t_2;
+
+      point = *e + (*d * t);
+      normal = (*(*point - c)/r);
+      
+      return std::shared_ptr<Intersection> (new Intersection(point, normal, t));
     }    
   };
 
@@ -277,8 +278,7 @@ namespace raytrace {
     }
 
     const Vector4& location() const { return *_location; }
-    const Vector4& gaze() const { return *_gaze; }
-    const Vector4& up() const { return *_up; }
+    const Vector4& gaze() const { return *_gaze; } const Vector4& up() const { return *_up; }
     double l() const { return _l; }
     double t() const { return _t; }
     double r() const { return _r; }
@@ -445,7 +445,7 @@ namespace raytrace {
 	
       for(int i = 0; i < 3 ; ++i)
       	(*c)[i] = g[i];
-      (*c).print();
+      c->print();
 
       for(double y = 0; y < height; ++y)
       {
@@ -478,10 +478,20 @@ namespace raytrace {
 				if((hit && closest == -1) || (hit && (hit->t() < closest)))
 				{
 					closest = hit->t();
-					lvect = ((_point_lights[0]->location())) - hit->point();
-					lvect = lvect->normalized();
-					shade = _objects[size]->diffuse_color() * (_point_lights[0]->intensity() * fmax(0, (hit->normal() * *lvect)));
-					image->set_pixel(x, y, shade);
+					if(_perspective)
+						image->set_pixel(x, y, _objects[size]->diffuse_color());
+					else{
+						lvect = _point_lights[0]->location() - hit->point();
+						lvect = lvect->normalized();
+						shade = _objects[size]->diffuse_color() * (_point_lights[0]->intensity() * fmax(0, (hit->normal() * *lvect)));
+						shade = shade + _ambient_light->color() * _ambient_light->intensity();
+						for(int i = 0; i < 3; ++i)
+						{
+							if(shade[i] > 1)
+								shade[i] = 1;
+						}
+						image->set_pixel(x, y, shade);
+					}
 				}
 			}
 		}

@@ -6,7 +6,7 @@
 // CPSC 484, CSU Fullerton, Spring 2016, Prof. Kevin Wortman
 // Project 2
 //
-// Name: TODO write your group members' name(s) here
+// Name: Andres Imperial
 //
 // In case it ever matters, this file is hereby placed under the MIT
 // License:
@@ -41,7 +41,7 @@
 #include <string>
 #include <vector>
 
-#include "raytracet.hh"
+#include "raytrace.hh"
 
 // Default image dimensions.
 const int DEFAULT_WIDTH(640), DEFAULT_HEIGHT(640);
