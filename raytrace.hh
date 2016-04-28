@@ -191,6 +191,7 @@ namespace raytrace {
       *d = ray_direction;
       *e = ray_origin;
       c = _center;
+      d = d->normalized();
 
       discriminant = sqrt(pow((*d * (*e - c)), 2) - (*d * *d) * (*(*e - c) * *(*e - c) - pow(r, 2)));
 
@@ -432,9 +433,11 @@ namespace raytrace {
       std::shared_ptr<Vector4> d(new Vector4(0)); 
       std::shared_ptr<Vector4> e(new Vector4(0)); 
       std::shared_ptr<Vector4> c(new Vector4(0));
+      std::shared_ptr<Vector4> up(new Vector4(0));
 
       gmath::Vector<double, 3> g;
       gmath::Vector<double, 3> u;
+      gmath::Vector<double, 3> r;
       for(int i = 0; i < 3 ; ++i)
       {
       		g[i] = _camera->gaze()[i];
@@ -442,9 +445,14 @@ namespace raytrace {
       }
       
       g = g.cross(u);      
+      r = g;
+      u = r.cross(g);
 	
       for(int i = 0; i < 3 ; ++i)
-      	(*c)[i] = g[i];
+      {
+		(*c)[i] = g[i];
+		(*up)[i] = u[i];
+      }
       c->print();
 
       for(double y = 0; y < height; ++y)
@@ -478,20 +486,16 @@ namespace raytrace {
 				if((hit && closest == -1) || (hit && (hit->t() < closest)))
 				{
 					closest = hit->t();
-					if(_perspective)
-						image->set_pixel(x, y, _objects[size]->diffuse_color());
-					else{
-						lvect = _point_lights[0]->location() - hit->point();
-						lvect = lvect->normalized();
-						shade = _objects[size]->diffuse_color() * (_point_lights[0]->intensity() * fmax(0, (hit->normal() * *lvect)));
-						shade = shade + _ambient_light->color() * _ambient_light->intensity();
-						for(int i = 0; i < 3; ++i)
-						{
-							if(shade[i] > 1)
-								shade[i] = 1;
-						}
-						image->set_pixel(x, y, shade);
+					lvect = _point_lights[0]->location() - hit->point();
+					lvect = lvect->normalized();
+					shade = _objects[size]->diffuse_color() * (_point_lights[0]->intensity() * fmax(0, (hit->normal() * *lvect)));
+					shade = shade + _ambient_light->color() * _ambient_light->intensity();
+					for(int i = 0; i < 3; ++i)
+					{
+						if(shade[i] > 1)
+							shade[i] = 1;
 					}
+					image->set_pixel(x, y, shade);
 				}
 			}
 		}
