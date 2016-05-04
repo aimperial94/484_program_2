@@ -75,6 +75,7 @@ namespace raytrace {
     return vector4(x, y, z, 0.0);
   }
 
+
   // Test whether a scalar represents an R, G, or B intensity in the
   // range [0, 1].
   
@@ -428,35 +429,17 @@ namespace raytrace {
 
       // TODO: implement the raytracing algorithm described in section
       // 4.6 of Marschner et al.
-      // std::shared_ptr<Vector4> point, normal, d, e, c;
       std::shared_ptr<Vector4> lvect(new Vector4(0)); 
       std::shared_ptr<Vector4> d(new Vector4(0)); 
       std::shared_ptr<Vector4> e(new Vector4(0)); 
-      std::shared_ptr<Vector4> c(new Vector4(0));
+      std::shared_ptr<Vector4> right(new Vector4(0));
       std::shared_ptr<Vector4> up(new Vector4(0));
 
-      gmath::Vector<double, 3> g;
-      gmath::Vector<double, 3> u;
-      gmath::Vector<double, 3> r;
-      for(int i = 0; i < 3 ; ++i)
-      {
-      		g[i] = _camera->gaze()[i];
-		u[i] = _camera->up()[i];
-      }
-      
-      g = g.cross(u);      
-      r = g;
-      u = r.cross(g);
-	
-      for(int i = 0; i < 3 ; ++i)
-      {
-		(*c)[i] = g[i];
-		(*up)[i] = u[i];
-      }
-      c->print();
+      right = vector4_cross(_camera->gaze(), _camera->up());
+      up = vector4_cross(*right, _camera->gaze());
 
-      for(double y = 0; y < height; ++y)
-      {
+            for(double y = 0; y < height; ++y)
+      	    {
 	      	for(double x = 0; x < width; ++x)
 		{
 			double u, v;
@@ -466,11 +449,11 @@ namespace raytrace {
 			if(_perspective)
 			{
 				*e = _camera->location();
-				d = *(*(_camera->gaze() * _camera->d()) + ((*c) * u)) + (_camera->up() * v);
+				d = *(*(_camera->gaze() * _camera->d()) + ((*right) * u)) + ((*up) * v);
 			}
 			else
 			{
-				e = *(_camera->location() + ((*c) * u)) + *(_camera->up() * v);
+				e = *(_camera->location() + ((*right) * u)) + *((*up) * v);
 				d = (_camera->gaze() * 1);
 			}
 
@@ -507,6 +490,25 @@ namespace raytrace {
     // TODO: You will probably want to write some private helper
     // functions to break up the render() function into digestible
     // pieces.
+    std::shared_ptr<Vector4> vector4_cross(Vector4 left_vect, Vector4 right_vect) const
+    {
+	    std::shared_ptr<Vector4> result(new Vector4(0));
+	    gmath::Vector<double, 3> left;
+	    gmath::Vector<double, 3> right;
+
+	    for(int i = 0; i < 3 ; ++i)
+	    {
+	      	left[i] = left_vect[i];
+	      	right[i] = right_vect[i];
+	    }
+	    
+	    left = left.cross(right);
+	      
+	    for(int i = 0; i < 3 ; ++i)
+	      	(*result)[i] = left[i];
+
+	    return result;
+    }
   };
 }
 
