@@ -436,7 +436,11 @@ namespace raytrace {
       std::shared_ptr<Vector4> up(new Vector4(0));
 
       right = vector4_cross(_camera->gaze(), _camera->up());
+      right->print();
+      right = right->normalized();
       up = vector4_cross(*right, _camera->gaze());
+      up->print();
+      up = up->normalized();
 
             for(double y = 0; y < height; ++y)
       	    {
